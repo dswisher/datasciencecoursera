@@ -1,4 +1,10 @@
 require(dplyr)
+require(reshape2)
+
+# Make sure we have the data available
+if (!file.exists("features.txt")) {
+    stop("Please make sure your working directory is set to the directory containing the data!")
+}
 
 # Read in the data. This assumes the current working directory is the root of the zip
 # file - the directory containing the README.txt file.
@@ -12,8 +18,8 @@ features <- sub("\\.$", "", gsub("(\\.\\.\\.)|(\\.\\.)", ".", gsub("[(),-]", "."
 train.activity <- read.table("train/y_train.txt", header = FALSE, col.names = c("code"))
 test.activity <- read.table("test/y_test.txt", header = FALSE, col.names = c("code"))
 
-train.subject <- read.table("train/subject_train.txt", header = FALSE, col.names = c("subject"))
-test.subject <- read.table("test/subject_test.txt", header = FALSE, col.names = c("subject"))
+train.subject <- read.table("train/subject_train.txt", header = FALSE, col.names = c("subject"), colClasses = c("factor"))
+test.subject <- read.table("test/subject_test.txt", header = FALSE, col.names = c("subject"), colClasses = c("factor"))
 
 train.raw <- read.table("train/X_train.txt", header = FALSE, col.names = features)
 test.raw <- read.table("test/X_test.txt", header = FALSE, col.names = features)
@@ -32,10 +38,19 @@ test <- cbind(test.subject, test.pretty[2], test.raw[desired.cols])
 tidy <- rbind(train, test)
 
 # Summarize the data
-# TODO - dplyr group_by/mean?  THIS IS WRONG - doesn't seem to respect the second column in group_by
-means <- tidy %>% group_by(subject, activity) %>% summarise_each(funs(mean))
+# WRONG: gives 40 rows instead of 180
+# means <- tidy %>% group_by(subject, activity) %>% summarise_each(funs(mean))
+
+# Melt and use narrow format to make it easy to compute means
+tidy.melted <- melt(tidy, id=c("subject", "activity"))
+means.melted <- tidy.melted %>% group_by(subject, activity, variable) %>% summarize(value = mean(value))
+
+# WRONG: gives 40 rows instead of 180
+# means <- aggregate(.~ subject + activity, tidy, mean)
 
 # Save the data for posterity
-write.table(tidy, "tidy.txt")
-write.table(means, "means.txt")
+# TODO - write out the data!
+# write.table(tidy, "tidy-wide.txt")
+write.table(tidy.melted, "tidy.txt")
+write.table(means.melted, "means.txt")
 
