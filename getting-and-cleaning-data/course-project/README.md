@@ -9,8 +9,6 @@ The goal of this project is to take raw data from [this zip file](https://d396qu
 
 To run the script, follow these steps:
 
-1. Make sure you have the `dplyr` package installed. If unsure, run `install.packages("dplyr")`.
-2. Make sure you have the `reshape2` package installed. If unsure, run `install.packages("reshape2")`.
 1. Download the [zip file](https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip) and unzip the contents to a directory of your choice.
 1. Open R Studio and set the working directory to the directory created in the previous step.
 1. Open the `run_analysis.R` script and run it using the "Source" button in the upper right of the text editor window.
