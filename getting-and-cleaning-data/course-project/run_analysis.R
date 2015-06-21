@@ -2,7 +2,7 @@
 # Read in the data. This assumes the current working directory is the root of the zip
 # file - the directory containing the README.txt file.
 
-# Load the lables and features, and clean up the names
+# Load the labels and features, and clean up the names
 activity.labels <- read.table("activity_labels.txt", header = FALSE, col.names = c("code", "activity"))
 features.raw <- read.table("features.txt", header = FALSE, sep = " ", col.names = c("code", "feature"), stringsAsFactors = FALSE)
 features <- sub("\\.$", "", gsub("(\\.\\.\\.)|(\\.\\.)", ".", gsub("[(),-]", ".", features.raw[,2])))
