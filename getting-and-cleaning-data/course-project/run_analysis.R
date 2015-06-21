@@ -21,8 +21,8 @@ test.raw <- read.table("test/X_test.txt", header = FALSE, col.names = features)
 desired.cols <- grep("(\\.mean)|(\\.std)", features)
 
 # Use human-readable activity names
-train.pretty <- inner_join(activity.labels, train.activity, by=c("code"))
-test.pretty <- inner_join(activity.labels, test.activity, by=c("code"))
+train.pretty <- merge(activity.labels, train.activity, by.x = "code", by.y = "code")
+test.pretty <- merge(activity.labels, test.activity, by.x = "code", by.y = "code")
 
 # Combine the raw data into something a bit more tidy
 train <- cbind(train.subject, train.pretty[2], train.raw[desired.cols])
