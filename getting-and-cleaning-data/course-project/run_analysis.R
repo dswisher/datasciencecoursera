@@ -1,25 +1,21 @@
-require(dplyr)
-require(reshape2)
+# Read in the data. This assumes the current working directory is the root of the zip
+# file - the directory containing the README.txt file.
 
-# Make sure we have the data available
 if (!file.exists("features.txt")) {
     stop("Please make sure your working directory is set to the directory containing the data!")
 }
 
-# Read in the data. This assumes the current working directory is the root of the zip
-# file - the directory containing the README.txt file.
-
 # Load the labels and features, and clean up the names
-activity.labels <- read.table("activity_labels.txt", header = FALSE, col.names = c("code", "activity"))
+activity.labels <- read.table("activity_labels.txt", header = FALSE, col.names = c("code", "activity"), stringsAsFactors = FALSE)
 features.raw <- read.table("features.txt", header = FALSE, sep = " ", col.names = c("code", "feature"), stringsAsFactors = FALSE)
 features <- sub("\\.$", "", gsub("(\\.\\.\\.)|(\\.\\.)", ".", gsub("[(),-]", ".", features.raw[,2])))
 
 # Load the raw data
-train.activity <- read.table("train/y_train.txt", header = FALSE, col.names = c("code"))
-test.activity <- read.table("test/y_test.txt", header = FALSE, col.names = c("code"))
+train.activity.raw <- read.table("train/y_train.txt", header = FALSE, col.names = c("code"))
+test.activity.raw <- read.table("test/y_test.txt", header = FALSE, col.names = c("code"))
 
-train.subject <- read.table("train/subject_train.txt", header = FALSE, col.names = c("subject"), colClasses = c("factor"))
-test.subject <- read.table("test/subject_test.txt", header = FALSE, col.names = c("subject"), colClasses = c("factor"))
+train.subject <- read.table("train/subject_train.txt", header = FALSE, col.names = c("subject"), colClasses = c("numeric"))
+test.subject <- read.table("test/subject_test.txt", header = FALSE, col.names = c("subject"), colClasses = c("numeric"))
 
 train.raw <- read.table("train/X_train.txt", header = FALSE, col.names = features)
 test.raw <- read.table("test/X_test.txt", header = FALSE, col.names = features)
@@ -28,29 +24,29 @@ test.raw <- read.table("test/X_test.txt", header = FALSE, col.names = features)
 desired.cols <- grep("(\\.mean)|(\\.std)", features)
 
 # Use human-readable activity names
-train.pretty <- merge(activity.labels, train.activity, by.x = "code", by.y = "code")
-test.pretty <- merge(activity.labels, test.activity, by.x = "code", by.y = "code")
+train.activity.name <- merge(activity.labels, train.activity.raw, by.x = "code", by.y = "code")
+test.activity.name <- merge(activity.labels, test.activity.raw, by.x = "code", by.y = "code")
+
+# Pick out the columns we want
+train.subset <- train.raw[,desired.cols]
+test.subset <- test.raw[,desired.cols]
 
 # Combine the raw data into something a bit more tidy
-train <- cbind(train.subject, train.pretty[2], train.raw[desired.cols])
-test <- cbind(test.subject, test.pretty[2], test.raw[desired.cols])
+train.combo <- data.frame(train.subject, train.activity.raw, train.subset)
+test.combo <- data.frame(test.subject, test.activity.raw, test.subset)
+
+train <- merge(activity.labels, train.combo, by.x = "code", by.y = "code")
+train$code <- NULL
+
+test <- merge(activity.labels, test.combo, by.x = "code", by.y = "code")
+test$code <- NULL
 
 tidy <- rbind(train, test)
 
 # Summarize the data
-# WRONG: gives 40 rows instead of 180
-# means <- tidy %>% group_by(subject, activity) %>% summarise_each(funs(mean))
-
-# Melt and use narrow format to make it easy to compute means
-tidy.melted <- melt(tidy, id=c("subject", "activity"))
-means.melted <- tidy.melted %>% group_by(subject, activity, variable) %>% summarize(value = mean(value))
-
-# WRONG: gives 40 rows instead of 180
-# means <- aggregate(.~ subject + activity, tidy, mean)
+means <- aggregate(.~ subject + activity, tidy, mean)
 
 # Save the data for posterity
-# TODO - write out the data!
-# write.table(tidy, "tidy-wide.txt")
-write.table(tidy.melted, "tidy.txt", row.names = FALSE)
-write.table(means.melted, "means.txt", row.names = FALSE)
+write.table(tidy, "tidy.txt", row.names = FALSE)
+write.table(means, "means.txt", row.names = FALSE)
 
