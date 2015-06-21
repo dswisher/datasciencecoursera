@@ -51,6 +51,6 @@ means.melted <- tidy.melted %>% group_by(subject, activity, variable) %>% summar
 # Save the data for posterity
 # TODO - write out the data!
 # write.table(tidy, "tidy-wide.txt")
-write.table(tidy.melted, "tidy.txt")
-write.table(means.melted, "means.txt")
+write.table(tidy.melted, "tidy.txt", row.names = FALSE)
+write.table(means.melted, "means.txt", row.names = FALSE)
 
