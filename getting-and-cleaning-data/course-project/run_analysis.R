@@ -1,3 +1,4 @@
+require(dplyr)
 
 # Read in the data. This assumes the current working directory is the root of the zip
 # file - the directory containing the README.txt file.
@@ -28,8 +29,13 @@ test.pretty <- merge(activity.labels, test.activity, by.x = "code", by.y = "code
 train <- cbind(train.subject, train.pretty[2], train.raw[desired.cols])
 test <- cbind(test.subject, test.pretty[2], test.raw[desired.cols])
 
-tidy1 <- rbind(train, test)
+tidy <- rbind(train, test)
 
 # Summarize the data
-# TODO - dplyr group_by/mean?
+# TODO - dplyr group_by/mean?  THIS IS WRONG - doesn't seem to respect the second column in group_by
+means <- tidy %>% group_by(subject, activity) %>% summarise_each(funs(mean))
+
+# Save the data for posterity
+write.table(tidy, "tidy.txt")
+write.table(means, "means.txt")
 
